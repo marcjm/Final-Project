@@ -1,0 +1,48 @@
+% Marc Alenn Jean Mary
+% Metal Plate Frequency Response Analysis
+sampling_frequency = 44100;
+data = test2{:, 1};  % Our data we can use the import data tool in Matlab
+
+% We have to compute FFT
+N = length(data);
+Y = fft(data);
+% Only take the first half
+P2 = abs(Y/N);
+P1 = P2(1:floor(N/2)+1);
+P1(2:end-1) = 2*P1(2:end-1);  % Adjust for the energy in the negative frequencies
+
+% Create frequency axis
+f = sampling_frequency * (0:(N/2))/N;
+
+% We can plot the frequency spectrum
+figure(1);
+plot(f, P1);
+title('Frequency Spectrum of Metal Plate');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+grid on;
+
+% We can find the peaks
+[pks, locs] = findpeaks(P1, 'SortStr', 'descend', 'NPeaks', 5);
+resonant_frequencies = f(locs);
+
+% We can display the 5 highest peaks
+figure(2);
+plot(f, P1);
+hold on;
+plot(resonant_frequencies, pks, 'ro', 'MarkerSize', 8);
+title('Top 5 Resonant Frequencies');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+grid on;
+
+% We can add text labels for each peak
+for i = 1:length(resonant_frequencies)
+    text(resonant_frequencies(i), pks(i), ['  ' num2str(resonant_frequencies(i), '%.1f') ' Hz'], 'FontSize', 10);
+end
+
+% We can print the values
+fprintf('The top 5 resonant frequencies are:\n');
+for i = 1:length(resonant_frequencies)
+    fprintf('Peak %d: %.2f Hz with magnitude %.4f\n', i, resonant_frequencies(i), pks(i));
+end

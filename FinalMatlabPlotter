@@ -1,48 +1,58 @@
 % Marc Alenn Jean Mary
 % Metal Plate Frequency Response Analysis
-sampling_frequency = 44100;
-data = test2{:, 1};  % Our data we can use the import data tool in Matlab
+sampling_frequency = 44100  
+data = test13{:, 1};  % Our data we can use the import data tool in Matlab
 
 % We have to compute FFT
 N = length(data);
 Y = fft(data);
-% Only take the first half
+% Only take the first half 
 P2 = abs(Y/N);
 P1 = P2(1:floor(N/2)+1);
-P1(2:end-1) = 2*P1(2:end-1);  % Adjust for the energy in the negative frequencies
+P1(2:end-1) = 2*P1(2:end-1); 
 
-% Create frequency axis
+% We can create frequency axis based on sampling
 f = sampling_frequency * (0:(N/2))/N;
 
-% We can plot the frequency spectrum
+% Find indices for frequency range 0-3000 Hz
+freq_limit = 3000; % We can choose our limit to graph and consider from
+freq_indices = f <= freq_limit;
+
+% Limit data to the specified frequency range
+f_limited = f(freq_indices);
+P1_limited = P1(freq_indices);
+
+% We can plot the limited frequency spectrum
 figure(1);
-plot(f, P1);
-title('Frequency Spectrum of Metal Plate');
+plot(f_limited, P1_limited);
+title('Frequency Spectrum of Metal Plate (0-2000 Hz)');
 xlabel('Frequency (Hz)');
 ylabel('Magnitude');
+xlim([0, freq_limit]);
 grid on;
 
-% We can find the peaks
-[pks, locs] = findpeaks(P1, 'SortStr', 'descend', 'NPeaks', 5);
-resonant_frequencies = f(locs);
+% Find the peaks within the limited range
+[pks, locs] = findpeaks(P1_limited, 'SortStr', 'descend', 'NPeaks', 5);
+resonant_frequencies = f_limited(locs);
 
-% We can display the 5 highest peaks
+% Display the 5 highest peaks within the limited range
 figure(2);
-plot(f, P1);
+plot(f_limited, P1_limited);
 hold on;
-plot(resonant_frequencies, pks, 'ro', 'MarkerSize', 8);
-title('Top 5 Resonant Frequencies');
+plot(resonant_frequencies, pks, 'ro', 'MarkerSize', 10);
+title('Cut Plate (0-3000 Hz)');
 xlabel('Frequency (Hz)');
 ylabel('Magnitude');
+xlim([0, freq_limit]);
 grid on;
 
-% We can add text labels for each peak
+% Add text labels for each peak
 for i = 1:length(resonant_frequencies)
     text(resonant_frequencies(i), pks(i), ['  ' num2str(resonant_frequencies(i), '%.1f') ' Hz'], 'FontSize', 10);
 end
 
-% We can print the values
-fprintf('The top 5 resonant frequencies are:\n');
+% Print the values
+fprintf('The top 5 resonant frequencies within 0-2000 Hz are:\n');
 for i = 1:length(resonant_frequencies)
     fprintf('Peak %d: %.2f Hz with magnitude %.4f\n', i, resonant_frequencies(i), pks(i));
 end
